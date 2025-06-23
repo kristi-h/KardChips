@@ -94,10 +94,13 @@ export function renderChipDisplay() {
     chip.innerHTML = `<img src="${data.src}" alt="${data.label}" />`;
 
     chip.addEventListener("click", () => {
-      document
-        .querySelectorAll(".chip")
-        .forEach((c) => c.classList.remove("focused"));
+      document.querySelectorAll(".chip").forEach((c) => {
+        c.classList.remove("focused");
+        c.querySelector("img")?.classList.remove("spinning");
+      });
+
       chip.classList.add("focused");
+      chip.querySelector("img").classList.add("spinning");
 
       selectedIndex = i;
 
@@ -122,9 +125,10 @@ export function renderChipDisplay() {
 
   resumeBtn.addEventListener("click", () => {
     isPaused = false;
+    document;
     document
-      .querySelectorAll(".chip")
-      .forEach((c) => c.classList.remove("focused"));
+      .querySelectorAll(".chip img")
+      .forEach((img) => img.classList.remove("spinning"));
     orbit.style.animation = "orbitRotate 60s linear infinite";
     info.style.display = "none";
   });
