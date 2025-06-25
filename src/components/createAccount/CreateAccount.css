@@ -11,6 +11,43 @@
   box-sizing: border-box;
 }
 
+.account-container::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: repeating-radial-gradient(
+    circle at center,
+    #a855f7 0px,
+    transparent 2px,
+    transparent 6px,
+    #9333ea 7px
+  );
+  animation: rotateGrid 40s linear infinite;
+  opacity: 0.03;
+  z-index: 0;
+}
+
+@keyframes rotateGrid {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.account-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(#00ffff20 1px, transparent 1px),
+    linear-gradient(90deg, #00ffff20 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
 .account-card {
   width: 400px;
   padding: 3rem;
@@ -23,6 +60,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  border: 1px solid #c084fc40;
 }
 
 .account-card h2 {
@@ -33,6 +71,40 @@
   color: #c084fc;
   text-shadow: 0 0 10px #c084fc, 0 0 20px #a855f7;
   letter-spacing: 0.1em;
+  position: relative;
+  overflow: hidden;
+}
+
+.account-card h2::after {
+  content: "Create Your Account";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  color: #ff00ff;
+  opacity: 0.5;
+  z-index: -1;
+  animation: glitch 1.5s infinite;
+}
+
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 1px);
+  }
+  40% {
+    transform: translate(1px, -2px);
+  }
+  60% {
+    transform: translate(-1px, 2px);
+  }
+  80% {
+    transform: translate(2px, 1px);
+  }
+  100% {
+    transform: translate(0);
+  }
 }
 
 .account-form {
@@ -70,7 +142,9 @@
 }
 
 .input-group input:focus {
-  box-shadow: 0 0 16px #c084fc, 0 0 32px #a855f7;
+  box-shadow: 0 0 8px #c084fc, 0 0 16px #a855f7, inset 0 0 6px #c084fc88;
+  background-color: #1c1c1c;
+  transition: 0.3s ease;
 }
 
 .input-group label {
