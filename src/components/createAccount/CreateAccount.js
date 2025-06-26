@@ -1,11 +1,13 @@
 import "../../style.css";
 import "./CreateAccount.css";
 import { renderHeader, setupHeaderEvents } from "../Header.js";
+import cyber from "/cyber2.png";
 
 export function renderCreateAccount() {
   document.querySelector("#app").innerHTML = `
   ${renderHeader()}
     <div class="account-container">
+     <img src="${cyber}" alt="cyber" class="cyber-bg" />
       <div class="account-card">
         <h2>Create Your Account</h2>
         <form class="account-form">
