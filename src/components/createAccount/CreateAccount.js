@@ -33,4 +33,12 @@ export function renderCreateAccount() {
     </div>
   `;
   setupHeaderEvents();
+
+  const bg = document.querySelector(".cyber-bg");
+  document.addEventListener("mousemove", (e) => {
+    const { innerWidth, innerHeight } = window;
+    const x = (e.clientX / innerWidth - 0.5) * 20;
+    const y = (e.clientY / innerHeight - 0.5) * 20;
+    bg.style.transform = `translate(-50%, -50%) rotateX(${y}deg) rotateY(${x}deg)`;
+  });
 }

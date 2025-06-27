@@ -9,6 +9,7 @@
   position: relative;
   padding: 1rem;
   box-sizing: border-box;
+  perspective: 1000px;
 }
 
 .account-container::before {
@@ -32,11 +33,14 @@
   position: absolute;
   top: 50%;
   left: 50%;
+  width: 110%;
+  max-width: none;
   transform: translate(-50%, -50%);
+  transition: transform 0.1s ease-out;
+  z-index: 0;
   min-width: 100vw;
   min-height: 100vh;
   object-fit: cover;
-  z-index: -1;
   pointer-events: none;
   opacity: 0.4;
 }
