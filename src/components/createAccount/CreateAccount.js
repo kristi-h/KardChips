@@ -51,74 +51,71 @@ export function renderCreateAccount() {
 
 function createParticles() {
   const canvas = document.getElementById("particles-bg");
-  if (!canvas) return;
-
   const ctx = canvas.getContext("2d");
-  let width = window.innerWidth;
-  let height = window.innerHeight;
-  canvas.width = width;
-  canvas.height = height;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
   const particles = Array.from({ length: 80 }, () => ({
-    x: Math.random() * width,
-    y: Math.random() * height,
-    r: Math.random() * 2 + 1,
-    dx: (Math.random() - 0.5) * 1.2,
-    dy: (Math.random() - 0.5) * 1.2,
-    hue: Math.floor(Math.random() * 60) + 180,
-    history: [],
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    radius: Math.random() * 1.5 + 0.5,
+    dx: (Math.random() - 0.5) * 0.6,
+    dy: (Math.random() - 0.5) * 0.6,
+    color: `hsl(${Math.random() * 40 + 180}, 100%, 70%)`,
   }));
 
-  let mouse = { x: null, y: null };
+  const ripples = [];
+
+  function addRipple(x, y) {
+    ripples.push({ x, y, radius: 0, alpha: 1 });
+  }
 
   canvas.addEventListener("mousemove", (e) => {
-    const rect = canvas.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left;
-    mouse.y = e.clientY - rect.top;
-  });
-
-  canvas.addEventListener("mouseleave", () => {
-    mouse.x = null;
-    mouse.y = null;
+    addRipple(e.clientX, e.clientY);
   });
 
   function animate() {
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (let p of particles) {
+    particles.forEach((p) => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = p.color;
+      ctx.fill();
+      ctx.closePath();
+
       p.x += p.dx;
       p.y += p.dy;
 
-      if (p.x < 0 || p.x > width) p.dx *= -1;
-      if (p.y < 0 || p.y > height) p.dy *= -1;
+      if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+    });
 
-      p.history.push({ x: p.x, y: p.y });
-      if (p.history.length > 6) p.history.shift();
+    ripples.forEach((r, i) => {
+      const gradient = ctx.createRadialGradient(
+        r.x,
+        r.y,
+        0,
+        r.x,
+        r.y,
+        r.radius
+      );
+      gradient.addColorStop(0, `rgba(0, 255, 255, ${r.alpha})`);
+      gradient.addColorStop(0.4, `rgba(138, 43, 226, ${r.alpha * 0.8})`);
+      gradient.addColorStop(0.7, `rgba(255, 0, 255, ${r.alpha * 0.3})`);
+      gradient.addColorStop(1, `rgba(0, 0, 0, 0)`);
 
-      const distanceToMouse =
-        mouse.x !== null ? Math.hypot(mouse.x - p.x, mouse.y - p.y) : Infinity;
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+      ctx.fill();
 
-      if (distanceToMouse < 100) {
-        for (let i = 0; i < p.history.length; i++) {
-          const point = p.history[i];
-          const intensity = (i + 1) / p.history.length;
-          const radius = p.r * intensity;
-          const color = `hsl(${p.hue}, 100%, ${60 + 20 * intensity}%)`;
-
-          ctx.beginPath();
-          ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
-          ctx.fillStyle = color;
-          ctx.shadowBlur = 10 * intensity;
-          ctx.shadowColor = color;
-          ctx.fill();
-        }
-      } else {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsl(${p.hue}, 100%, 40%)`;
-        ctx.fill();
-      }
-    }
+      r.radius += 2.5;
+      r.alpha -= 0.02;
+      if (r.alpha <= 0) ripples.splice(i, 1);
+    });
 
     requestAnimationFrame(animate);
   }
@@ -126,9 +123,7 @@ function createParticles() {
   animate();
 
   window.addEventListener("resize", () => {
-    width = window.innerWidth;
-    height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
   });
 }
