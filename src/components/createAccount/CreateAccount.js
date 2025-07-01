@@ -66,6 +66,26 @@ function createParticles() {
 
   const ripples = [];
 
+  let vehicle = {
+    x: -100,
+    y: 100 + Math.random() * 300,
+    width: 60,
+    height: 30,
+    speed: 2 + Math.random() * 1.5,
+    alive: true,
+  };
+
+  const blasters = [];
+
+  canvas.addEventListener("click", (e) => {
+    blasters.push({
+      x: e.clientX,
+      y: e.clientY,
+      radius: 5,
+      speed: 6,
+    });
+  });
+
   function addRipple(x, y) {
     ripples.push({ x, y, radius: 0, alpha: 1 });
   }
@@ -115,6 +135,60 @@ function createParticles() {
       r.radius += 2.5;
       r.alpha -= 0.02;
       if (r.alpha <= 0) ripples.splice(i, 1);
+    });
+
+    if (vehicle.alive) {
+      ctx.fillStyle = "#ff0080";
+      ctx.shadowColor = "#ff0080";
+      ctx.shadowBlur = 12;
+      ctx.fillRect(vehicle.x, vehicle.y, vehicle.width, vehicle.height);
+      vehicle.x += vehicle.speed;
+
+      if (vehicle.x > canvas.width + 100) {
+        vehicle.x = -100;
+        vehicle.y = 100 + Math.random() * 300;
+        vehicle.speed = 2 + Math.random() * 1.5;
+        vehicle.alive = true;
+      }
+    }
+
+    blasters.forEach((b, i) => {
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "#00ffff";
+      ctx.shadowColor = "#00ffff";
+      ctx.shadowBlur = 10;
+      ctx.fill();
+      ctx.closePath();
+      b.y -= b.speed;
+
+      if (b.y < 0) blasters.splice(i, 1);
+
+      if (
+        vehicle.alive &&
+        b.x > vehicle.x &&
+        b.x < vehicle.x + vehicle.width &&
+        b.y > vehicle.y &&
+        b.y < vehicle.y + vehicle.height
+      ) {
+        vehicle.alive = false;
+        blasters.splice(i, 1);
+
+        for (let j = 0; j < 20; j++) {
+          ripples.push({
+            x: vehicle.x + vehicle.width / 2,
+            y: vehicle.y + vehicle.height / 2,
+            radius: 0,
+            alpha: 1,
+          });
+        }
+
+        setTimeout(() => {
+          vehicle.x = -100;
+          vehicle.y = 100 + Math.random() * 300;
+          vehicle.alive = true;
+        }, 1500);
+      }
     });
 
     requestAnimationFrame(animate);
