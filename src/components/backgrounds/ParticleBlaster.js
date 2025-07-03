@@ -122,17 +122,38 @@ export function initParticleBlaster(canvas, ctx, external = {}) {
     });
   }
 
+  let pulse = 0;
+
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    drawVehicle();
+    if (external.vehicle && external.vehicle.alive) {
+      const v = external.vehicle;
+      v.x += v.dx;
+      v.y += v.dy;
+
+      if (v.y < 0 || v.y + v.height > canvas.height) v.dy *= -1;
+      if (v.x + v.width < 0) v.x = canvas.width;
+      if (v.x > canvas.width) v.x = -v.width;
+
+      const hoverOffset = Math.sin(pulse) * 2;
+
+      const angle = Math.atan2(v.dy, v.dx) * 0.3;
+
+      ctx.save();
+      ctx.translate(v.x + v.width / 2, v.y + v.height / 2 + hoverOffset);
+      ctx.rotate(angle);
+      ctx.drawImage(v.img, -v.width / 2, -v.height / 2, v.width, v.height);
+      ctx.restore();
+    }
+
     drawParticles();
     drawRipples();
     drawBlasters();
 
+    pulse += 0.1;
     requestAnimationFrame(animate);
   }
-
   animate();
 
   window.addEventListener("resize", () => {
