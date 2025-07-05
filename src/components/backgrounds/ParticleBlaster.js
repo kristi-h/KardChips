@@ -127,6 +127,9 @@ export function initParticleBlaster(canvas, ctx, external = {}) {
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    if (external.vehicle && external.vehicle.draw) {
+      external.vehicle.draw();
+    }
     if (external.vehicle && external.vehicle.alive) {
       const v = external.vehicle;
       v.x += v.dx;

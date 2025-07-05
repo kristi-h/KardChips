@@ -42,7 +42,7 @@ export function renderCreateAccount() {
     const canvas = document.getElementById("particles-bg");
     const ctx = canvas.getContext("2d");
 
-    const drone = initDrone(canvas);
+    const drone = initDrone(canvas, ctx);
     initParticleBlaster(canvas, ctx, { vehicle: drone });
 
     const bg = document.querySelector(".cyber-bg");
