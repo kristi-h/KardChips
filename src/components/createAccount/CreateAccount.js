@@ -42,8 +42,9 @@ export function renderCreateAccount() {
     const canvas = document.getElementById("particles-bg");
     const ctx = canvas.getContext("2d");
 
-    const drone = initDrone(canvas, ctx);
-    initParticleBlaster(canvas, ctx, { vehicle: drone });
+    initParticleBlaster(canvas, ctx, {
+      createDrone: (canvas, ctx) => initDrone(canvas, ctx),
+    });
 
     const bg = document.querySelector(".cyber-bg");
     document.addEventListener("mousemove", (e) => {

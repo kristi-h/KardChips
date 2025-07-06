@@ -14,6 +14,35 @@ export function initParticleBlaster(canvas, ctx, external = {}) {
   const ripples = [];
   const blasters = [];
 
+  const drones = [];
+  const maxDrones = 10;
+  const usedPositions = new Set();
+
+  function spawnDrone() {
+    if (!external.createDrone || drones.length >= maxDrones) return;
+
+    let x, y;
+    let tries = 0;
+    do {
+      x = Math.floor(Math.random() * (canvas.width - 120));
+      y = Math.floor(Math.random() * (canvas.height * 0.4));
+      tries++;
+    } while (usedPositions.has(`${x},${y}`) && tries < 10);
+
+    usedPositions.add(`${x},${y}`);
+
+    const drone = external.createDrone(canvas, ctx);
+    drone.vehicle.x = x;
+    drone.vehicle.y = y;
+
+    drones.push(drone);
+  }
+
+  const droneSpawner = setInterval(() => {
+    spawnDrone();
+    if (drones.length >= maxDrones) clearInterval(droneSpawner);
+  }, 1500);
+
   canvas.addEventListener("mousemove", (e) => {
     ripples.push({ x: e.clientX, y: e.clientY, radius: 0, alpha: 1 });
   });
@@ -21,19 +50,6 @@ export function initParticleBlaster(canvas, ctx, external = {}) {
   canvas.addEventListener("click", (e) => {
     blasters.push({ x: e.clientX, y: e.clientY, radius: 5, speed: 6 });
   });
-
-  function drawVehicle() {
-    const v = external.vehicle;
-    if (!v || !v.alive) return;
-
-    ctx.drawImage(v.img, v.x, v.y, v.width, v.height);
-    v.x -= v.speed;
-
-    if (v.x + v.width < 0) {
-      v.x = canvas.width + Math.random() * 300;
-      v.y = Math.random() * (canvas.height / 2);
-    }
-  }
 
   function drawParticles() {
     particles.forEach((p) => {
@@ -92,71 +108,44 @@ export function initParticleBlaster(canvas, ctx, external = {}) {
 
       if (b.y < 0) blasters.splice(i, 1);
 
-      const v = external.vehicle;
-      if (
-        v &&
-        v.alive &&
-        b.x > v.x &&
-        b.x < v.x + v.width &&
-        b.y > v.y &&
-        b.y < v.y + v.height
-      ) {
-        v.alive = false;
-        blasters.splice(i, 1);
-
-        for (let j = 0; j < 20; j++) {
-          ripples.push({
-            x: v.x + v.width / 2,
-            y: v.y + v.height / 2,
-            radius: 0,
-            alpha: 1,
-          });
+      drones.forEach((d) => {
+        const v = d.vehicle;
+        if (
+          v.alive &&
+          b.x > v.x &&
+          b.x < v.x + v.width &&
+          b.y > v.y &&
+          b.y < v.y + v.height
+        ) {
+          v.alive = false;
+          blasters.splice(i, 1);
+          for (let j = 0; j < 20; j++) {
+            ripples.push({
+              x: v.x + v.width / 2,
+              y: v.y + v.height / 2,
+              radius: 0,
+              alpha: 1,
+            });
+          }
+          setTimeout(() => {
+            v.x = canvas.width + Math.random() * 300;
+            v.y = Math.random() * canvas.height * 0.5;
+            v.alive = true;
+          }, 1500);
         }
-
-        setTimeout(() => {
-          v.x = -100;
-          v.y = 100 + Math.random() * 300;
-          v.alive = true;
-        }, 1500);
-      }
+      });
     });
   }
 
-  let pulse = 0;
-
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (external.vehicle && external.vehicle.draw) {
-      external.vehicle.draw();
-    }
-    if (external.vehicle && external.vehicle.alive) {
-      const v = external.vehicle;
-      v.x += v.dx;
-      v.y += v.dy;
-
-      if (v.y < 0 || v.y + v.height > canvas.height) v.dy *= -1;
-      if (v.x + v.width < 0) v.x = canvas.width;
-      if (v.x > canvas.width) v.x = -v.width;
-
-      const hoverOffset = Math.sin(pulse) * 2;
-
-      const angle = Math.atan2(v.dy, v.dx) * 0.3;
-
-      ctx.save();
-      ctx.translate(v.x + v.width / 2, v.y + v.height / 2 + hoverOffset);
-      ctx.rotate(angle);
-      ctx.drawImage(v.img, -v.width / 2, -v.height / 2, v.width, v.height);
-      ctx.restore();
-    }
-
     drawParticles();
     drawRipples();
     drawBlasters();
-
-    pulse += 0.1;
+    drones.forEach((d) => d.draw());
     requestAnimationFrame(animate);
   }
+
   animate();
 
   window.addEventListener("resize", () => {
